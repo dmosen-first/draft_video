@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Relay AI | Product Intro</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --canvas: #f4f8fc;
+        --panel: #fcfeff;
+        --ink: #10253d;
+        --muted: #536d87;
+        --blue: #0b61c9;
+        --cyan: #39b9d6;
+        --line: #d4e3f0;
+        --soft-blue: #e9f2fd;
+        --good: #086a48;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background-color: var(--canvas);
+        color: var(--ink);
+        font-family: "IBM Plex Mono", monospace;
+      }
+
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background-color: var(--canvas);
+      }
+
+      .scene {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        background-color: var(--canvas);
+      }
+
+      #scene-1 {
+        z-index: 1;
+      }
+
+      #scene-2 {
+        z-index: 2;
+        opacity: 0;
+      }
+
+      #scene-3 {
+        z-index: 3;
+        opacity: 0;
+      }
+
+      #scene-4 {
+        z-index: 4;
+        opacity: 0;
+      }
+
+      .backdrop {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+      }
+
+      .grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(212, 227, 240, 0.42) 1px, rgba(212, 227, 240, 0) 1px),
+          linear-gradient(90deg, rgba(212, 227, 240, 0.42) 1px, rgba(212, 227, 240, 0) 1px);
+        background-size: 72px 72px;
+        mask-image: radial-gradient(ellipse at center, black 18%, rgba(0, 0, 0, 0.65) 52%, transparent 88%);
+      }
+
+      .glow {
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+        background: radial-gradient(circle, rgba(22, 119, 232, 0.13), rgba(22, 119, 232, 0));
+      }
+
+      .glow-a {
+        width: 760px;
+        height: 760px;
+        right: -140px;
+        top: -170px;
+      }
+
+      .glow-b {
+        width: 620px;
+        height: 620px;
+        left: -180px;
+        bottom: -180px;
+        background: radial-gradient(circle, rgba(57, 185, 214, 0.12), rgba(57, 185, 214, 0));
+      }
+
+      .rail {
+        position: absolute;
+        left: 90px;
+        right: 90px;
+        top: 68px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--muted);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 16px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .rail-mark {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        color: var(--ink);
+        font-family: "IBM Plex Mono", monospace;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: -0.03em;
+        text-transform: none;
+      }
+
+      .relay-symbol {
+        position: relative;
+        width: 34px;
+        height: 34px;
+      }
+
+      .relay-symbol::before,
+      .relay-symbol::after {
+        content: "";
+        position: absolute;
+        border-radius: 8px;
+        background-color: var(--blue);
+      }
+
+      .relay-symbol::before {
+        inset: 2px 13px 2px 2px;
+      }
+
+      .relay-symbol::after {
+        width: 15px;
+        height: 15px;
+        right: 1px;
+        top: 9px;
+        background-color: var(--cyan);
+      }
+
+      .scene-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        padding: 134px 108px 94px;
+        gap: 30px;
+      }
+
+      .eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--blue);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 17px;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: 42px;
+        height: 2px;
+        background-color: var(--blue);
+      }
+
+      h1 {
+        max-width: 950px;
+        color: var(--ink);
+        font-size: 82px;
+        font-weight: 700;
+        letter-spacing: -0.065em;
+        line-height: 0.98;
+      }
+
+      .lead {
+        max-width: 650px;
+        color: var(--muted);
+        font-size: 27px;
+        font-weight: 400;
+        line-height: 1.45;
+        letter-spacing: -0.02em;
+      }
+
+      .status-strip {
+        display: flex;
+        width: fit-content;
+        gap: 26px;
+        align-items: center;
+        margin-top: 18px;
+        padding: 17px 23px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background-color: rgba(252, 254, 255, 0.95);
+        box-shadow: 0 10px 34px rgba(16, 37, 61, 0.06);
+        color: var(--muted);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 16px;
+        text-transform: uppercase;
+      }
+
+      .dot-live {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: var(--cyan);
+        box-shadow: 0 0 0 7px rgba(57, 185, 214, 0.15);
+      }
+
+      .hero-orbit {
+        position: absolute;
+        right: 116px;
+        top: 220px;
+        width: 560px;
+        height: 560px;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+      }
+
+      .hero-orbit::before,
+      .hero-orbit::after {
+        content: "";
+        position: absolute;
+        inset: 54px;
+        border: 1px dashed rgba(22, 119, 232, 0.25);
+        border-radius: 50%;
+      }
+
+      .hero-orbit::after {
+        inset: 146px;
+        border-style: solid;
+        background-color: var(--panel);
+        box-shadow: 0 28px 72px rgba(22, 119, 232, 0.09);
+      }
+
+      .orbit-node {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 92px;
+        height: 42px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background-color: var(--panel);
+        color: var(--muted);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        z-index: 2;
+      }
+
+      .orbit-node.n1 {
+        left: -18px;
+        top: 186px;
+      }
+
+      .orbit-node.n2 {
+        right: -12px;
+        top: 250px;
+      }
+
+      .orbit-node.n3 {
+        bottom: 52px;
+        left: 168px;
+      }
+
+      .center-badge {
+        position: absolute;
+        inset: 214px;
+        z-index: 3;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 11px;
+        color: var(--blue);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 14px;
+        text-transform: uppercase;
+      }
+
+      .center-badge .relay-symbol {
+        width: 48px;
+        height: 48px;
+      }
+
+      .product-layout {
+        display: grid;
+        grid-template-columns: 610px 1fr;
+        gap: 38px;
+        height: 730px;
+        margin-top: 32px;
+      }
+
+      .panel {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        background-color: var(--panel);
+        box-shadow: 0 20px 52px rgba(16, 37, 61, 0.07);
+      }
+
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 64px;
+        padding: 0 25px;
+        border-bottom: 1px solid var(--line);
+        color: var(--muted);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 15px;
+        text-transform: uppercase;
+      }
+
+      .prompt-panel {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .prompt-body {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        padding: 40px 34px 30px;
+        gap: 25px;
+      }
+
+      .prompt-label {
+        color: var(--muted);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 15px;
+        text-transform: uppercase;
+      }
+
+      .prompt-copy {
+        max-width: 505px;
+        color: var(--ink);
+        font-size: 34px;
+        font-weight: 500;
+        letter-spacing: -0.045em;
+        line-height: 1.24;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .chip {
+        padding: 12px 17px;
+        border-radius: 999px;
+        background-color: var(--soft-blue);
+        color: var(--blue);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 14px;
+      }
+
+      .send-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: auto;
+        padding: 17px 19px;
+        border-radius: 18px;
+        background-color: #f5f9fd;
+        color: var(--muted);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 14px;
+      }
+
+      .send-button {
+        padding: 11px 21px;
+        border-radius: 12px;
+        background-color: var(--blue);
+        color: #fcfeff;
+      }
+
+      .routing-panel {
+        position: relative;
+        padding: 40px 45px;
+      }
+
+      .workflow-title {
+        color: var(--ink);
+        font-size: 37px;
+        font-weight: 600;
+        letter-spacing: -0.045em;
+      }
+
+      .workflow-subtitle {
+        margin-top: 9px;
+        color: var(--muted);
+        font-size: 20px;
+      }
+
+      .nodes {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        margin-top: 48px;
+      }
+
+      .node {
+        position: relative;
+        display: grid;
+        grid-template-columns: 54px 1fr auto;
+        gap: 18px;
+        align-items: center;
+        padding: 20px 22px;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background-color: #ffffff;
+      }
+
+      .node:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        bottom: -25px;
+        left: 48px;
+        width: 2px;
+        height: 24px;
+        background-color: var(--cyan);
+      }
+
+      .node-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 46px;
+        height: 46px;
+        border-radius: 13px;
+        background-color: var(--soft-blue);
+        color: var(--blue);
+        font-family: "IBM Plex Mono", monospace;
+        font-weight: 600;
+      }
+
+      .node-name {
+        color: var(--ink);
+        font-size: 22px;
+        font-weight: 500;
+      }
+
+      .node-desc {
+        color: var(--muted);
+        font-size: 16px;
+        margin-top: 4px;
+      }
+
+      .node-state {
+        padding: 9px 13px;
+        border-radius: 999px;
+        background-color: #ebf8f4;
+        color: var(--good);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        text-transform: uppercase;
+      }
+
+      .dashboard-layout {
+        display: grid;
+        grid-template-columns: 1.25fr 0.82fr;
+        gap: 34px;
+        height: 728px;
+        margin-top: 30px;
+      }
+
+      .execution-panel {
+        padding-bottom: 28px;
+      }
+
+      .run-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding: 34px 35px 29px;
+      }
+
+      .run-heading h2 {
+        font-size: 42px;
+        letter-spacing: -0.05em;
+      }
+
+      .running {
+        color: var(--blue);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 15px;
+        text-transform: uppercase;
+      }
+
+      .run-table {
+        margin: 0 35px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+      }
+
+      .run-row {
+        display: grid;
+        grid-template-columns: 1fr 180px 126px;
+        align-items: center;
+        height: 82px;
+        padding: 0 25px;
+        border-bottom: 1px solid var(--line);
+        font-size: 20px;
+      }
+
+      .run-row:last-child {
+        border-bottom: 0;
+      }
+
+      .run-duration,
+      .complete {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 16px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .run-duration {
+        color: var(--muted);
+      }
+
+      .complete {
+        color: var(--good);
+      }
+
+      .metric-panel {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 42px 40px 36px;
+      }
+
+      .metric-label {
+        color: var(--muted);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 16px;
+        text-transform: uppercase;
+      }
+
+      .metric {
+        color: var(--blue);
+        font-size: 112px;
+        font-weight: 700;
+        letter-spacing: -0.065em;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .metric-copy {
+        color: var(--ink);
+        font-size: 30px;
+        font-weight: 500;
+        letter-spacing: -0.035em;
+        line-height: 1.25;
+      }
+
+      .metric-line {
+        width: 100%;
+        height: 94px;
+        border-bottom: 2px solid var(--cyan);
+        background: linear-gradient(180deg, rgba(57, 185, 214, 0), rgba(57, 185, 214, 0.13));
+        clip-path: polygon(0 92%, 22% 68%, 42% 73%, 64% 38%, 82% 48%, 100% 4%, 100% 100%, 0 100%);
+      }
+
+      .end-content {
+        align-items: center;
+        text-align: center;
+        gap: 25px;
+      }
+
+      .end-symbol {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 90px;
+        height: 90px;
+        margin-bottom: 6px;
+        border-radius: 28px;
+        background-color: #ffffff;
+        box-shadow: 0 22px 60px rgba(22, 119, 232, 0.13);
+      }
+
+      .end-symbol .relay-symbol {
+        width: 51px;
+        height: 51px;
+      }
+
+      .wordmark {
+        font-size: 74px;
+        font-weight: 700;
+        letter-spacing: -0.065em;
+      }
+
+      .end-tagline {
+        max-width: 700px;
+        color: var(--muted);
+        font-size: 29px;
+        line-height: 1.4;
+      }
+
+      .cta {
+        margin-top: 22px;
+        padding: 21px 39px;
+        border-radius: 999px;
+        background-color: var(--blue);
+        color: #fcfeff;
+        font-size: 24px;
+        font-weight: 500;
+        box-shadow: 0 18px 36px rgba(22, 119, 232, 0.2);
+      }
+
+      .end-url {
+        margin-top: 20px;
+        color: var(--muted);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 16px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="relay-ai-intro"
+      data-start="0"
+      data-duration="15"
+      data-width="1920"
+      data-height="1080"
+    >
+      <section id="scene-1" class="scene">
+        <div class="backdrop" data-layout-ignore>
+          <div class="grid"></div>
+          <div class="glow glow-a"></div>
+          <div class="glow glow-b"></div>
+        </div>
+        <header class="rail">
+          <div class="rail-mark"><span class="relay-symbol"></span>Relay AI</div>
+          <span>Workflow OS / 01</span>
+        </header>
+        <div class="scene-content">
+          <p class="eyebrow">AI workflow orchestration</p>
+          <h1>Move work from brief to done.</h1>
+          <p class="lead">Coordinate every task, tool, and approval through one intelligent relay.</p>
+          <div class="status-strip">
+            <span class="dot-live"></span>
+            <span>System ready</span>
+            <span>/</span>
+            <span>Agents connected</span>
+          </div>
+        </div>
+        <div class="hero-orbit" data-layout-ignore>
+          <span class="orbit-node n1">BRIEF</span>
+          <span class="orbit-node n2">SHIP</span>
+          <span class="orbit-node n3">REVIEW</span>
+          <div class="center-badge"><span class="relay-symbol"></span><span>Relay</span></div>
+        </div>
+      </section>
+
+      <section id="scene-2" class="scene">
+        <div class="backdrop" data-layout-ignore>
+          <div class="grid"></div>
+          <div class="glow glow-a"></div>
+        </div>
+        <header class="rail">
+          <div class="rail-mark"><span class="relay-symbol"></span>Relay AI</div>
+          <span>Routing / 02</span>
+        </header>
+        <div class="scene-content">
+          <p class="eyebrow">Prompt to execution</p>
+          <div class="product-layout">
+            <article class="panel prompt-panel">
+              <div class="panel-header"><span>New request</span><span>09:42:16</span></div>
+              <div class="prompt-body">
+                <span class="prompt-label">Campaign Launch</span>
+                <p class="prompt-copy">Prepare the product announcement and route final approval.</p>
+                <div class="chip-row">
+                  <span class="chip">Release brief</span>
+                  <span class="chip">Legal review</span>
+                  <span class="chip">Publish</span>
+                </div>
+                <div class="send-bar"><span>Relay is ready</span><span class="send-button">Run workflow</span></div>
+              </div>
+            </article>
+            <article class="panel routing-panel">
+              <h2 class="workflow-title">Workflow activated</h2>
+              <p class="workflow-subtitle">Every dependency is routed automatically.</p>
+              <div class="nodes">
+                <div class="node">
+                  <span class="node-icon">01</span>
+                  <div><p class="node-name">Route</p><p class="node-desc">Assign the right specialist agents</p></div>
+                  <span class="node-state">Ready</span>
+                </div>
+                <div class="node">
+                  <span class="node-icon">02</span>
+                  <div><p class="node-name">Tools</p><p class="node-desc">Connect docs and release channels</p></div>
+                  <span class="node-state">Linked</span>
+                </div>
+                <div class="node">
+                  <span class="node-icon">03</span>
+                  <div><p class="node-name">Approval</p><p class="node-desc">Request sign-off at the right moment</p></div>
+                  <span class="node-state">Queued</span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-3" class="scene">
+        <div class="backdrop" data-layout-ignore>
+          <div class="grid"></div>
+          <div class="glow glow-b"></div>
+        </div>
+        <header class="rail">
+          <div class="rail-mark"><span class="relay-symbol"></span>Relay AI</div>
+          <span>Results / 03</span>
+        </header>
+        <div class="scene-content">
+          <p class="eyebrow">Live execution</p>
+          <div class="dashboard-layout">
+            <article class="panel execution-panel">
+              <div class="run-heading">
+                <h2>Campaign Launch</h2>
+                <span class="running">Complete / 3 of 3</span>
+              </div>
+              <div class="run-table" data-layout-allow-overflow>
+                <div class="run-row"><span>Generate launch brief</span><span class="run-duration">00:42</span><span class="complete">Complete</span></div>
+                <div class="run-row"><span>Run policy approval</span><span class="run-duration">01:04</span><span class="complete">Complete</span></div>
+                <div class="run-row"><span>Schedule release assets</span><span class="run-duration">00:31</span><span class="complete">Complete</span></div>
+              </div>
+            </article>
+            <article class="panel metric-panel">
+              <span class="metric-label">Delivery velocity</span>
+              <strong class="metric">3.4x</strong>
+              <p class="metric-copy">faster delivery from brief to publish</p>
+              <div class="metric-line"></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-4" class="scene">
+        <div class="backdrop" data-layout-ignore>
+          <div class="grid"></div>
+          <div class="glow glow-a"></div>
+          <div class="glow glow-b"></div>
+        </div>
+        <div class="scene-content end-content">
+          <div class="end-symbol"><span class="relay-symbol"></span></div>
+          <h2 class="wordmark">Relay AI</h2>
+          <p class="end-tagline">Workflows that move with you.</p>
+          <div class="cta">Build with Relay AI</div>
+          <span class="end-url">relay.ai / get started</span>
+        </div>
+      </section>
+
+      <audio class="clip" id="voice-1" data-start="0.22" data-duration="2.923" data-track-index="10" src="assets/audio/scene-1.wav" data-volume="1"></audio>
+      <audio class="clip" id="voice-2" data-start="3.25" data-duration="3.52" data-track-index="10" src="assets/audio/scene-2.wav" data-volume="1"></audio>
+      <audio class="clip" id="voice-3" data-start="7.05" data-duration="2.773" data-track-index="10" src="assets/audio/scene-3.wav" data-volume="1"></audio>
+      <audio class="clip" id="voice-4" data-start="11.65" data-duration="2.773" data-track-index="10" src="assets/audio/scene-4.wav" data-volume="1"></audio>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.from("#scene-1 .rail", { y: -24, opacity: 0, duration: 0.45, ease: "power2.out" }, 0.14);
+      tl.from("#scene-1 .eyebrow", { x: -28, opacity: 0, duration: 0.46, ease: "expo.out" }, 0.23);
+      tl.from("#scene-1 h1", { y: 48, opacity: 0, duration: 0.62, ease: "power3.out" }, 0.34);
+      tl.from("#scene-1 .lead", { y: 30, opacity: 0, duration: 0.5, ease: "sine.out" }, 0.62);
+      tl.from("#scene-1 .status-strip", { y: 22, scale: 0.98, opacity: 0, duration: 0.48, ease: "back.out(1.25)" }, 0.86);
+      tl.from("#scene-1 .hero-orbit", { scale: 0.92, opacity: 0, duration: 0.7, ease: "power2.out" }, 0.42);
+      tl.from("#scene-1 .orbit-node", { scale: 0.84, opacity: 0, duration: 0.38, stagger: 0.12, ease: "back.out(1.5)" }, 0.78);
+      tl.from("#scene-1 .center-badge", { scale: 0.82, opacity: 0, duration: 0.45, ease: "expo.out" }, 0.7);
+      tl.from("#scene-1 .glow", { opacity: 0, scale: 0.9, duration: 0.8, stagger: 0.16, ease: "sine.out" }, 0.12);
+
+      tl.to("#scene-1", { x: -1920, duration: 0.42, ease: "power3.inOut" }, 2.8);
+      tl.fromTo("#scene-2", { x: 1920, opacity: 1 }, { x: 0, opacity: 1, duration: 0.42, ease: "power3.inOut", immediateRender: false }, 2.8);
+      tl.set("#scene-1", { opacity: 0 }, 3.22);
+      tl.from("#scene-2 .rail", { y: -20, opacity: 0, duration: 0.35, ease: "power2.out" }, 3.05);
+      tl.from("#scene-2 .eyebrow", { x: -25, opacity: 0, duration: 0.36, ease: "expo.out" }, 3.12);
+      tl.from("#scene-2 .prompt-panel", { y: 38, opacity: 0, duration: 0.5, ease: "power3.out" }, 3.22);
+      tl.from("#scene-2 .routing-panel", { y: 42, opacity: 0, duration: 0.52, ease: "back.out(1.18)" }, 3.35);
+      tl.from("#scene-2 .chip", { y: 14, opacity: 0, duration: 0.28, stagger: 0.08, ease: "sine.out" }, 3.7);
+      tl.from("#scene-2 .node", { x: 32, opacity: 0, duration: 0.4, stagger: 0.17, ease: "power2.out" }, 3.82);
+      tl.from("#scene-2 .send-button", { scale: 0.9, opacity: 0, duration: 0.36, ease: "back.out(1.5)" }, 4.08);
+      tl.from("#scene-2 .glow", { opacity: 0, scale: 0.88, duration: 0.8, ease: "sine.out" }, 3.0);
+
+      tl.to("#scene-2", { x: -1920, duration: 0.42, ease: "power3.inOut" }, 6.64);
+      tl.fromTo("#scene-3", { x: 1920, opacity: 1 }, { x: 0, opacity: 1, duration: 0.42, ease: "power3.inOut", immediateRender: false }, 6.64);
+      tl.set("#scene-2", { opacity: 0 }, 7.06);
+      tl.from("#scene-3 .rail", { y: -22, opacity: 0, duration: 0.36, ease: "power2.out" }, 6.9);
+      tl.from("#scene-3 .eyebrow", { x: -25, opacity: 0, duration: 0.36, ease: "expo.out" }, 6.96);
+      tl.from("#scene-3 .execution-panel", { y: 38, opacity: 0, duration: 0.48, ease: "power3.out" }, 7.08);
+      tl.from("#scene-3 .metric-panel", { y: 38, opacity: 0, duration: 0.5, ease: "back.out(1.2)" }, 7.21);
+      tl.from("#scene-3 .run-row", { x: -26, opacity: 0, duration: 0.34, stagger: 0.17, ease: "sine.out" }, 7.54);
+      tl.from("#scene-3 .metric", { y: 28, opacity: 0, duration: 0.48, ease: "expo.out" }, 7.74);
+      tl.from("#scene-3 .metric-line", { scaleX: 0, transformOrigin: "left center", opacity: 0, duration: 0.6, ease: "power2.out" }, 8.0);
+      tl.from("#scene-3 .glow", { opacity: 0, scale: 0.88, duration: 0.8, ease: "sine.out" }, 6.78);
+
+      tl.to("#scene-3", { filter: "blur(10px)", scale: 1.03, opacity: 0, duration: 0.5, ease: "power2.inOut" }, 11.0);
+      tl.fromTo("#scene-4", { filter: "blur(10px)", scale: 0.97, opacity: 0 }, { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.5, ease: "power2.inOut", immediateRender: false }, 11.1);
+      tl.set("#scene-3", { opacity: 0 }, 11.5);
+      tl.from("#scene-4 .end-symbol", { y: 28, scale: 0.86, opacity: 0, duration: 0.48, ease: "back.out(1.32)" }, 11.42);
+      tl.from("#scene-4 .wordmark", { y: 28, opacity: 0, duration: 0.46, ease: "power3.out" }, 11.57);
+      tl.from("#scene-4 .end-tagline", { y: 20, opacity: 0, duration: 0.43, ease: "sine.out" }, 11.76);
+      tl.from("#scene-4 .cta", { y: 20, scale: 0.97, opacity: 0, duration: 0.44, ease: "expo.out" }, 12.02);
+      tl.from("#scene-4 .end-url", { y: 12, opacity: 0, duration: 0.36, ease: "power2.out" }, 12.24);
+      tl.from("#scene-4 .glow", { opacity: 0, scale: 0.9, duration: 0.75, stagger: 0.12, ease: "sine.out" }, 11.2);
+      tl.to("#scene-4 .end-content", { y: -12, opacity: 0, duration: 0.46, ease: "power2.in" }, 14.45);
+
+      window.__timelines["relay-ai-intro"] = tl;
+    </script>
+  </body>
+</html>
